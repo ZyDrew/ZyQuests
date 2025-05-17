@@ -17,27 +17,32 @@ def game_start(cur, conn):
             case "1":
                 ipt_user = input("Enter your username : ")
                 if get_player_infos(ipt_user, cur) is None:
-                    create_new_player(ipt_user, cur, conn)
+                    create_new_game(ipt_user, cur, conn)
                     stay = False
                     selected_class = player_select_class(ipt_user)
                     
-                    if isinstance(selected_class, Elf):
-                        new_game_elf(selected_class)
+                    match selected_class:
+                        case "Dragon":
+                            create_player(ipt_user, "Dragon", 1, 100, 40, 5, cur, conn)
+                            #new_game_dragon()
+                        case "Elf":
+                            create_player(ipt_user, "Elf", 1, 100, 20, 5, cur, conn)
+                            new_game_elf(ipt_user)
+                        case "Giant":
+                            create_player(ipt_user, "Giant", 1, 100, 20, 8, cur, conn)
+                            #new_game_giant()
                 else:
-                    print("""
-                          A party already exists with this name !
-                          Load a game or choice another name
-                          """)
+                    print("A party already exists with this name !\nLoad a game or choose another name")
             
             case "2":
                 #Charger les parties existantes
                 games = get_all_games(cur)
                 if games:
                     for game in games:
-                        print(f"{game[0]}. {game[1]} - last save : 01/01/2025 12:30")
-                        ipt_save = select_saved_game(games)
-                        PARTY = load_party(ipt_save, cur)
-                        stay = False
+                        print(f"{game[0]}. {game[1]} - last save : {game[2]}")
+                    ipt_save = select_saved_game(games)
+                    PARTY = load_game(ipt_save, cur)
+                    stay = False
                 else:
                     print("No party available\nCreate a new game with option 1")
             
@@ -46,9 +51,20 @@ def game_start(cur, conn):
     #End while stay
 
 #Nouvelle partie pour la classe Elf
-def new_game_elf(player):
-    print("Game starting, you are an Elf")
+def new_game_elf(username):
+    print("Game starting...")
+    player = Elf(username, 1, 100, 20, 5, [], 10)
     print(player)
+
+#Boucle principale du jeu
+def main_game_process(cur, conn):
+    game_running = True
+    while(game_running):
+        action = player_select_action_base()
+        if action == "Exit":
+            game_running = False
+        print(action)
+    #End while Game_Running
 
 def select_option_menu():
     ipt_menu = input("Enter option : ")
@@ -64,7 +80,30 @@ def select_saved_game(games):
     except Exception:
         pass    
     return select_saved_game(games)
+
+#Le joueur choisit une action
+def player_select_action_base():
+    print(r"""
+[1] Move forward
+[2] Search treasures
+[3] Save game
+[4] Exit
+          """)
+    stay = True
+    while(stay):
+        ipt_select = input("Enter your choice : ")
+        if ipt_select in ("1", "2", "3", "4"):
+            stay = False
     
+    match ipt_select:
+        case "1":
+            return "Move forward"
+        case "2":
+            return "Search treasures"
+        case "3":
+            return "Save game"
+        case "4":
+            return "Exit"
 
 #Le joueur selectionne une classe au départ de sa partie
 def player_select_class(ipt_user):
@@ -90,7 +129,7 @@ def player_select_class(ipt_user):
             case "1":
                 return "Dragon"
             case "2":
-                return Elf(ipt_user, 1, 100, 20, 5, [], 10)
+                return "Elf"
             case "3":
                 return "Giant"
 

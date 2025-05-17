@@ -20,3 +20,9 @@ class Player:
     def get_inventory(self):
         return self.__inventory
     
+    def take_damage(self, damage):
+        self.__health -= damage
+
+    def __repr__(self):
+        pass
+    
